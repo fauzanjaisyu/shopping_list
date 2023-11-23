@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
     <!-- Navbar -->
     <nav class="navbar bg-body-tertiary">
         <div class="container-fluid">
@@ -19,8 +20,6 @@
     <h5>Class:</h5>
     <p>{{class}}</p>
 
-
-    <table id="product_table"></table>
 
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">Add Product by AJAX</button>
 
@@ -55,37 +54,6 @@
             </div>
         </div>
     </div>
-    <!-- <table>
-        <tr>
-            <th>Name</th>
-            <th>Price</th>
-            <th>Description</th>
-            <th>Date Added</th>
-        </tr>
-
-    {% comment %} Berikut cara memperlihatkan data produk di bawah baris ini {% endcomment %}
-
-    {% for product in products %}
-        <tr>
-            <td>{{product.name}}</td>
-            <td>{{product.price}}</td>
-            <td>{{product.description}}</td>
-            <td>{{product.date_added}}</td>
-            <td>
-                <a href="{% url 'main:edit_product' product.pk %}">
-                    <button>
-                        Edit
-                    </button>
-                </a>
-                <a href="{% url 'main:delete_product' product.pk %}">
-                      <button>
-                          Delete
-                      </button>
-                </a>
-            </td>
-        </tr>
-        {% endfor %}
-    </table> -->
 
 <br />
 
@@ -94,44 +62,41 @@
 
     <h5>Sesi terakhir login: {{ last_login }}</h5>
 
+<div class="row" id="product_cards">
+    <!-- Di sini akan ditampilkan kartu-kartu produk -->
+</div>
 <script>
     async function getProducts() {
         return fetch("{% url 'main:get_product_json' %}").then((res) => res.json())
     }
 
     async function refreshProducts() {
-        document.getElementById("product_table").innerHTML = ""
+        document.getElementById("product_cards").innerHTML = ""
         const products = await getProducts()
-        let htmlString = `<tr>
-            <th>Name</th>
-            <th>Price</th>
-            <th>Description</th>
-            <th>Date Added</th>
-        </tr>`
-        products.forEach((item) => {
-            htmlString += `\n<tr>
-            <td>${item.fields.name}</td>
-            <td>${item.fields.price}</td>
-            <td>${item.fields.description}</td>
-            <td>${item.fields.date_added}</td>
-            <td>
-                    <a href="edit-product/${item.pk}">
-                        <button>
-                            Edit
-                        </button>
-                    </a>
-                </td>
-                <td>
-                    <a href="delete/${item.pk}">
-                        <button>
-                            Delete
-                        </button>
-                    </a>
-                </td>
-        </tr>` 
-        })
-        
-        document.getElementById("product_table").innerHTML = htmlString
+
+        if (products.length === 0) {
+            document.getElementById("product_cards").innerHTML = '<p>Anda belum memiliki item.</p>';
+        } else {
+            products.forEach((item) => {
+                const cardHtml = `
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">${item.fields.name}</h5>
+                            <p class="card-text">Price: ${item.fields.price}</p>
+                            <p class="card-text">Description: ${item.fields.description}</p>
+                            <p class="card-text">Date Added: ${item.fields.date_added}</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="edit-product/${item.pk}" class="btn btn-primary">Edit</a>
+                            <a href="delete/${item.pk}" class="btn btn-danger">Delete</a>
+                        </div>
+                    </div>
+                </div>`;
+
+                document.getElementById("product_cards").innerHTML += cardHtml;
+            });
+        }
     }
     
     refreshProducts()
